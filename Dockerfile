@@ -15,5 +15,7 @@ RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
+RUN apt-get update && apt-get install -y docker.io
+
 USER jenkins
 
