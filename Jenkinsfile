@@ -98,7 +98,6 @@ pipeline {
                 echo "Running integration tests _inside_ app container"
                 sh '''
                     docker cp test_api.py digit-api-staging:/app/test_api.py
-                    docker exec digit-api-staging pip install requests
                     docker exec digit-api-staging python /app/test_api.py
                 '''
             }
