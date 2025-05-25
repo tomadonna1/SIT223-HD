@@ -55,8 +55,14 @@ pipeline {
                 echo "Building the FastAPI Docker image"
                 sh 'docker build -t digit-api:staging -f Dockerfile.app .'
 
-                echo "Running the container on custom network digit-net"
-                sh 'docker run -d --name digit-api-staging --network digit-net digit-api:staging'
+                echo "Running the app container on digit-net with network alias"
+                sh '''
+                    docker run -d \
+                        --name digit-api-staging \
+                        --network digit-net \
+                        --network-alias digit-api-staging \
+                        digit-api:staging
+                '''
 
                 echo "Verifying container is attached to digit-net"
                 sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
@@ -64,24 +70,29 @@ pipeline {
                 echo "Waiting for FastAPI app to be ready"
                 sh '''
                     for i in {1..30}; do
-                    docker exec digit-api-staging curl -s http://localhost:8000/health && break
-                    sleep 1
+                        docker exec digit-api-staging curl -s http://localhost:8000/health && break
+                        sleep 1
                     done
                 '''
             }
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "🧪 Creating test-client container on digit-net"
+                echo "Creating test-client container on digit-net"
                 sh '''
                     docker rm -f test-client || true
-                    docker run -dit --name test-client --network digit-net -v $PWD:/app -w /app python:3.10 bash
+                    docker run -dit \
+                        --name test-client \
+                        --network digit-net \
+                        -v $PWD:/app \
+                        -w /app \
+                        python:3.10 bash
                 '''
 
                 echo "Installing test dependencies inside test-client"
                 sh 'docker exec test-client pip install requests'
 
-                echo "Running test_api.py from test-client"
+                echo "Running test_api.py inside test-client"
                 sh 'docker exec test-client python test_api.py'
 
                 echo "Cleaning up test-client"
