@@ -57,16 +57,16 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                echo "Creating Docker network for staging environment"
+                echo "🌐 Creating Docker network for staging environment"
                 sh 'docker network create digit-net || true'
 
-                echo "Cleaning up old staging container (if any)"
+                echo "🧹 Cleaning up old staging container (if any)"
                 sh 'docker rm -f digit-api-staging || true'
 
-                echo "Building the FastAPI Docker image"
+                echo "🐳 Building the FastAPI Docker image"
                 sh 'docker build -t digit-api:staging -f Dockerfile.app .'
 
-                echo "Running the app container on digit-net with network alias"
+                echo "🚀 Running the app container on digit-net with alias"
                 sh '''
                     docker run -d \
                         --name digit-api-staging \
@@ -75,28 +75,36 @@ pipeline {
                         digit-api:staging
                 '''
 
-                echo "Verifying container is attached to digit-net"
+                echo "🔍 Verifying container is attached to digit-net"
                 sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
 
-                echo "Waiting for FastAPI app to be ready"
+                echo "⏳ Waiting for FastAPI app to be ready (via /health)"
                 sh '''
                     for i in {1..30}; do
                         docker exec digit-api-staging curl -s http://localhost:8000/health && break
                         sleep 1
                     done
                 '''
+
+                echo "📦 Extracting container IP and saving to app_ip.txt"
+                sh '''
+                    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt
+                    cat app_ip.txt
+                '''
             }
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "Running test_api.py inside a single-use container on digit-net"
+                echo "Running test_api.py inside container using app's IP"
                 sh '''
-                    docker run --rm \
-                        --network digit-net \
-                        -v $PWD:/app \
-                        -w /app \
-                        python:3.10 \
-                        sh -c "pip install requests && python test_api.py"
+                export APP_IP=$(cat app_ip.txt)
+                docker run --rm \
+                    --network digit-net \
+                    -v $PWD:/app \
+                    -w /app \
+                    -e API_HOST=http://$APP_IP:8000 \
+                    python:3.10 \
+                    sh -c "pip install requests && python test_api.py"
                 '''
             }
         }
