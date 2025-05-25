@@ -46,31 +46,32 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                echo "Create Docker network for app + test communication"
+                echo "Creating Docker network for staging environment"
                 sh 'docker network create digit-net || true'
 
-                echo "Build FastAPI image"
-                sh 'docker build -t digit-api:staging -f Dockerfile.app .'
-
-                echo "Remove existing container"
+                echo "Cleaning up old staging container (if any)"
                 sh 'docker rm -f digit-api-staging || true'
 
-                echo "Run container on network digit-net"
+                echo "Building the FastAPI Docker image"
+                sh 'docker build -t digit-api:staging -f Dockerfile.app .'
+
+                echo "Running the container on custom network digit-net"
                 sh 'docker run -d --name digit-api-staging --network digit-net digit-api:staging'
 
-                echo "List running containers"
-                sh 'docker ps'
+                echo "Verifying container is attached to digit-net"
+                sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
+
+                echo "Waiting for FastAPI app to be ready"
+                sh '''
+                    for i in {1..30}; do
+                    docker exec digit-api-staging curl -s http://localhost:8000/health && break
+                    sleep 1
+                    done
+                '''
             }
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "Waiting for digit-api-staging to be ready on port 8000..."
-                sh '''
-                for i in {1..30}; do
-                    docker exec digit-api-staging curl -s http://localhost:8000/health && break
-                    sleep 1
-                done
-                '''
                 echo "Run test_api.py inside isolated Python container on digit-net"
                 sh '''
                     docker run --rm \
