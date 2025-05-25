@@ -95,21 +95,11 @@ pipeline {
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "📦 Extracting container IP and running test container"
+                echo "Running integration tests _inside_ app container"
                 sh '''
-                    # Extract IP
-                    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt
-                    APP_IP=$(cat app_ip.txt)
-
-                    echo "🔗 Connecting test client to $APP_IP"
-                    
-                    docker run --rm \
-                        --network digit-net \
-                        -v $PWD:/app \
-                        -w /app \
-                        -e API_HOST=http://$APP_IP:8000 \
-                        python:3.10 \
-                        sh -c "pip install requests && python test_api.py"
+                    docker cp test_api.py digit-api-staging:/app/test_api.py
+                    docker exec digit-api-staging pip install requests
+                    docker exec digit-api-staging python /app/test_api.py
                 '''
             }
         }
