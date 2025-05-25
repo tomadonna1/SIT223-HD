@@ -2,7 +2,7 @@ import requests
 
 def test_predict():
     image_path = "test_images/label_3.png"  
-    url = "http://localhost:8000/predict"
+    url = "http://host.docker.internal:8000/predict"
 
     with open(image_path, "rb") as f:
         response = requests.post(url, files={"file": f})
