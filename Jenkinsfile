@@ -30,9 +30,9 @@ pipeline {
         }
         stage('Code Analysis') {
             steps {
-                echo "Check for code smells and style violations"
-                echo "E.g. check for PEP8 compliance, unused imports, complexity"
-                echo "Tool: pylint, flake8, black"
+                echo "Running code quality checks on lenet.py"
+                sh 'flake8 lenet.py --count --select=E9,F63,F7,F82 --show-source --statistics || true'
+                sh 'pylint lenet.py || true'
             }
         }
         stage('Security Scan') {
