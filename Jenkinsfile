@@ -9,7 +9,7 @@ pipeline {
 	    pollSCM '*/1 * * * *' // check git repo every 1 minute to see any changes, if changes made then run the jenkins
     }
     environment{
-        DIRECTORY_PATH = 'https://github.com/tomadonna1/Part1Task1.git'
+        DIRECTORY_PATH = 'https://github.com/tomadonna1/SIT223-HD.git'
         TESTING_ENVIRONMENT = 'testing environment'
         PRODUCTION_ENVIRONMENT = 'production environment'
     }
