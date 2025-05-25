@@ -24,7 +24,7 @@ pipeline {
         stage('Unit and Integration Tests') {
             steps {
                 echo "Running unit and integration tests with pytest"
-                sh '/opt/venv/bin/unit_integration_tests/'
+                sh '/opt/venv/bin/python unit_integration_tests/test_model.py'
             }
         }
         stage('Code Analysis') {
