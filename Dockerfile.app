@@ -1,10 +1,16 @@
 FROM python:3.10
 
 WORKDIR /app
-COPY . .
 
+# Copy only requirements.txt first to cache
+COPY requirements.txt .
+
+# Install dependency (will be cached if requirements.txt didn't change)
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+
+# Copy the rest
+COPY . .
 
 EXPOSE 8000
 
