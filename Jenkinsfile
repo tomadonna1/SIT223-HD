@@ -85,7 +85,7 @@ pipeline {
                 sh 'docker exec test-client python test_api.py'
 
                 echo "Cleaning up test-client"
-                sh 'docker rm -f test-client
+                sh 'docker rm -f test-client'
             }
         }
         stage('Deploy to Production'){
