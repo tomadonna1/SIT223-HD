@@ -85,8 +85,8 @@ pipeline {
                             echo "FastAPI app is ready!"
                             break
                         fi
-                            echo "Waiting for FastAPI app to start..."
-                            sleep 2
+                        echo "Waiting for FastAPI app to start..."
+                        sleep 2
                     done
                 '''
 
