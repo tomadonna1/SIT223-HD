@@ -80,9 +80,13 @@ pipeline {
 
                 echo "⏳ Waiting for FastAPI app to be ready (via /health)"
                 sh '''
-                    for i in {1..30}; do
-                        docker exec digit-api-staging curl -s http://localhost:8000/health && break
-                        sleep 1
+                    for i in {1..10}; do
+                        if docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
+                            echo "FastAPI app is ready!"
+                            break
+                        fi
+                            echo "Waiting for FastAPI app to start..."
+                            sleep 2
                     done
                 '''
 
