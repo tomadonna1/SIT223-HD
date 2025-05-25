@@ -46,10 +46,14 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                echo "Deploy trained model and client script to a staging environment like Docker or EC2"
-                echo "E.g. Simulate model serving in a test environment"
-                echo "Tool: Docker, scp, Ansible"
-                // sleep 10
+                echo "Building FastAPI app with Dockerfile.app"
+                sh 'docker build -t digit-api:staging -f Dockerfile.app .'
+
+                echo "Removing old container (if exists)"
+                sh 'docker rm -f digit-api-staging || true'
+
+                echo "Running container on port 8000"
+                sh 'docker run -d -p 8000:8000 --name digit-api-staging digit-api:staging'
             }
         }
         stage('Integration Tests on Staging'){
