@@ -58,9 +58,8 @@ pipeline {
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "Validate dependencies in the staging container and the inference works correctly."
-                echo "E.g. Send input to check for correct predictions"
-                echo "Tool: Custom test scripts for pytest, Postman, REST API"
+                echo "Running integration tests against staging API"
+                sh '/opt/venv/bin/python test_api.py'
             }
         }
         stage('Deploy to Production'){
