@@ -1,6 +1,5 @@
 fastapi
-uvicorn
-Pillow
+uvicorn[standard]
 pillow
 torch
 torchvision
