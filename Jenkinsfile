@@ -79,15 +79,28 @@ pipeline {
                 sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
 
                 echo "⏳ Waiting for FastAPI app to be ready (via /health)"
-                sh '''
-                    for i in {1..10}; do
-                        if docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
-                            echo "FastAPI app is ready!"
-                            break
-                        fi
-                        echo "Waiting for FastAPI app to start..."
-                        sleep 2
-                    done
+                script {
+                def healthReady = sh (
+                    script: '''
+                        for i in {1..10}; do
+                            if docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
+                                echo "✅ FastAPI app is ready!"
+                                exit 0
+                            fi
+                            echo "Waiting for FastAPI app to start..."
+                            sleep 2
+                        done
+                        exit 1
+                    ''',
+                    returnStatus: true
+                    )
+
+                    if (healthReady != 0) {
+                        echo "❌ FastAPI app failed to start. Dumping logs:"
+                        sh 'docker logs digit-api-staging || true'
+                        error("FastAPI app did not become ready in time.")
+                    }
+                }
                 '''
 
                 echo "📦 Extracting container IP and saving to app_ip.txt"
