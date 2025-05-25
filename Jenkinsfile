@@ -54,6 +54,12 @@ pipeline {
 
                 echo "Running container on port 8000"
                 sh 'docker run -d -p 8000:8000 --name digit-api-staging digit-api:staging'
+
+                echo "Checking if container is running"
+                sh 'docker ps -a'
+
+                echo "Pause for 10 seconds"
+                sh 'sleep 10'
             }
         }
         stage('Integration Tests on Staging'){
