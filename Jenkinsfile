@@ -37,9 +37,11 @@ pipeline {
         }
         stage('Security Scan') {
             steps {
-                echo "Check for potential Python dependency vulnerabilities"
-                echo "E.g. scan for insecure packages"
-                echo "Tool: safety, bandit, pip-audit"
+                echo "Running Bandit scan on lenet.py"
+                sh '/opt/venv/bin/bandit -r lenet.py || true'
+
+                echo "Running pip-audit for dependency vulnerabilities"
+                sh '/opt/venv/bin/pip-audit || true'
             }
         }
         stage('Deploy to Staging') {
