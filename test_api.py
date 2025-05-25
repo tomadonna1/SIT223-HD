@@ -3,7 +3,8 @@ import os
 
 def test_predict():
     image_path = "test_images/label_3.png"  
-    url = os.getenv("API_HOST", "http://localhost:8000") + "/predict"
+    api_host = os.getenv("API_HOST", "http://digit-api-staging:8000")
+    url = f"{api_host}/predict"
 
     with open(image_path, "rb") as f:
         response = requests.post(url, files={"file": f})
