@@ -46,26 +46,33 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                echo "Building FastAPI app with Dockerfile.app"
+                echo "Create Docker network for app + test communication"
+                sh 'docker network create digit-net || true'
+
+                echo "Build FastAPI image"
                 sh 'docker build -t digit-api:staging -f Dockerfile.app .'
 
-                echo "Removing old container (if exists)"
+                echo "Remove existing container"
                 sh 'docker rm -f digit-api-staging || true'
 
-                echo "Running container on port 8000"
-                sh 'docker run -d -p 8000:8000 --name digit-api-staging digit-api:staging'
+                echo "Run container on network digit-net"
+                sh 'docker run -d --name digit-api-staging --network digit-net digit-api:staging'
 
-                echo "Checking if container is running"
-                sh 'docker ps -a'
-
-                echo "Pause for 10 seconds"
-                sh 'sleep 10'
+                echo "List running containers"
+                sh 'docker ps'
             }
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "Running integration tests against staging API"
-                sh '/opt/venv/bin/python test_api.py'
+                echo "Run test_api.py inside isolated Python container on digit-net"
+                sh '''
+                    docker run --rm \
+                        --network digit-net \
+                        -v $PWD:/app \
+                        -w /app \
+                        python:3.10 \
+                        python test_api.py
+                '''
             }
         }
         stage('Deploy to Production'){
