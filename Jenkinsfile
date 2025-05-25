@@ -101,8 +101,8 @@ pipeline {
             steps {
                 echo "Running integration tests _inside_ app container"
                 sh '''
-                    docker cp test_api.py digit-api-staging:/app/test_api.py
-                    docker exec digit-api-staging python /app/test_api.py
+                APP_IP=$(cat app_ip.txt)
+                API_HOST="http://$APP_IP:8000" python3 test_api.py
                 '''
             }
         }
