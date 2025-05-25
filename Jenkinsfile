@@ -1,7 +1,7 @@
 pipeline {
       agent {
             docker{
-                image 'tomadonna/SIT223HD'
+                image 'tomadonna/sit223hd'
                 args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
             }
         }
