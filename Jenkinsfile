@@ -31,8 +31,8 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo "Running code quality checks on lenet.py"
-                sh 'flake8 lenet.py --count --select=E9,F63,F7,F82 --show-source --statistics || true'
-                sh 'pylint lenet.py || true'
+                sh '/opt/venv/bin/flake8 lenet.py --count --select=E9,F63,F7,F82 --show-source --statistics || true'
+                sh '/opt/venv/bin/pylint lenet.py || true'
             }
         }
         stage('Security Scan') {
