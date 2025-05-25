@@ -71,7 +71,7 @@ pipeline {
                         -v $PWD:/app \
                         -w /app \
                         python:3.10 \
-                        python test_api.py
+                        h -c "pip install requests && python test_api.py"
                 '''
             }
         }
