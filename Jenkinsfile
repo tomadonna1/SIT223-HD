@@ -68,14 +68,14 @@ pipeline {
                 echo "Move working version from staging to production"
                 echo "Tool: Docker, AWS CLI, FastAPI"
             }
-            post {
-                success{ echo "Post success "
-                        mail to: "tomdeptrai1@gmail.com",
-                            subject: "Build Status Email",
-                            body: "Build was successful!"
-                        }
-                failure { echo "Post failed" } 
-            }
+            // post {
+            //     success{ echo "Post success "
+            //             mail to: "tomdeptrai1@gmail.com",
+            //                 subject: "Build Status Email",
+            //                 body: "Build was successful!"
+            //             }
+            //     failure { echo "Post failed" } 
+            // }
         }
     }
 }
