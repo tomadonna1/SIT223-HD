@@ -72,15 +72,20 @@ pipeline {
         }
         stage('Integration Tests on Staging'){
             steps {
-                echo "Run test_api.py inside isolated Python container on digit-net"
+                echo "🧪 Creating test-client container on digit-net"
                 sh '''
-                    docker run --rm \
-                        --network digit-net \
-                        -v $PWD:/app \
-                        -w /app \
-                        python:3.10 \
-                        sh -c "pip install requests && python test_api.py"
+                    docker rm -f test-client || true
+                    docker run -dit --name test-client --network digit-net -v $PWD:/app -w /app python:3.10 bash
                 '''
+
+                echo "Installing test dependencies inside test-client"
+                sh 'docker exec test-client pip install requests'
+
+                echo "Running test_api.py from test-client"
+                sh 'docker exec test-client python test_api.py'
+
+                echo "Cleaning up test-client"
+                sh 'docker rm -f test-client
             }
         }
         stage('Deploy to Production'){
