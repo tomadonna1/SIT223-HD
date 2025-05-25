@@ -3,7 +3,7 @@ import os
 
 def test_predict():
     image_path = "test_images/label_3.png"  
-    api_host = os.getenv("API_HOST", "http://localhost:80000")
+    api_host = os.getenv("API_HOST", "http://localhost:8000")
     url = f"{api_host}/predict"
 
     with open(image_path, "rb") as f:
