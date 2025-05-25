@@ -13,7 +13,18 @@ pipeline {
         TESTING_ENVIRONMENT = 'testing environment'
         PRODUCTION_ENVIRONMENT = 'production environment'
     }
+    options {
+        skipStagesAfterUnstable()
+    }  
     stages {
+        stage('Docker Cleanup') {
+            steps {
+                echo "Cleaning Docker build cache to prevent snapshot errors"
+                sh '''
+                    docker builder prune -f
+                '''
+            }
+        }
         stage('Build') {
             steps {
                 echo "Fetch the source code from the directory path specified by the environment variable"
