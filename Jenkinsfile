@@ -1,7 +1,7 @@
 pipeline {
       agent {
             docker{
-                image 'tomadonna/jenkins-cnn'
+                image 'tomadonna/SIT223HD'
                 args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
             }
         }
@@ -23,10 +23,8 @@ pipeline {
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo "Check individual functions and interaction between model component"
-                echo "E.g. Check model loading, inference logic, other functions"
-                echo "Tool: pytest"
-                sh '/opt/venv/bin/python test_model.py'
+                echo "Running unit and integration tests with pytest"
+                sh '/opt/venv/bin/unit_integration_tests/'
             }
         }
         stage('Code Analysis') {

@@ -4,3 +4,9 @@ pillow
 torch
 torchvision
 requests
+pytest
+flake8 
+pylint 
+black
+bandit
+pip-audit
