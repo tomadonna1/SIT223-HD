@@ -64,6 +64,13 @@ pipeline {
         }
         stage('Integration Tests on Staging'){
             steps {
+                echo "Waiting for digit-api-staging to be ready on port 8000..."
+                sh '''
+                for i in {1..30}; do
+                    docker exec digit-api-staging curl -s http://localhost:8000/health && break
+                    sleep 1
+                done
+                '''
                 echo "Run test_api.py inside isolated Python container on digit-net"
                 sh '''
                     docker run --rm \
