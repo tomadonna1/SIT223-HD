@@ -159,7 +159,7 @@ pipeline {
                             body: "The /health endpoint returned HTTP ${response}."
                         error("Production health check failed. Alert sent.")
                     } else {
-                        echo "Production health check OK"
+                        echo "Production health check OK" 
                     }
                 }
             }
