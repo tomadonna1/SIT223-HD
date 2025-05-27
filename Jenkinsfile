@@ -93,11 +93,11 @@ pipeline {
                 echo "🧪 Verifying /predict endpoint is functional"
                 sh '''
                     # You must have a sample image available inside the container
-                    docker cp test_images/sample_digit.png digit-api-staging:/app/sample_digit.png
+                    docker cp test_images/label_0.png digit-api-staging:/app/label_0.png
 
                     curl_response=$(docker exec digit-api-staging curl -s -o /dev/null -w "%{http_code}" \
                         -X POST http://localhost:8000/predict \
-                        -F "file=@/app/sample_digit.png")
+                        -F "file=@/app/label_0.png")
 
                     if [ "$curl_response" -ne 200 ]; then
                         echo "❌ /predict endpoint failed with status code $curl_response"
