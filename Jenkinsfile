@@ -101,9 +101,12 @@ pipeline {
             steps {
                 echo "Running integration tests _inside_ app container"
                 sh '''
-                pip3 install requests
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install requests
                 APP_IP=$(cat app_ip.txt)
-                API_HOST="http://$APP_IP:8000" python3 test_api.py
+                API_HOST="http://$APP_IP:8000" venv/bin/python test_api.pylint
                 '''
             }
         }
