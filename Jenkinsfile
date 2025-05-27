@@ -110,7 +110,7 @@ pipeline {
                 . venv/bin/activate
                 pip install --upgrade pip
                 pip install requests
-
+                '''
                 echo "🛠 Extracting IP of the running container"
                 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt || true
                 echo "📄 Contents of app_ip.txt:"
@@ -127,7 +127,6 @@ pipeline {
 
                 echo "🌍 Running test with API_HOST=http://${APP_IP}:8000"
                 env API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py 
-                '''
             }
         }
         stage('Deploy to Production'){
