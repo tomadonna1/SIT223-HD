@@ -105,28 +105,44 @@ pipeline {
             steps {
                 echo "Running integration tests _inside_ app container"
                 sh '''
-                set -e
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install requests
+                    set -e
+
+                    # 🐍 Setup virtual environment
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install requests
+
+                    # 🛠 Extract container IP
+                    echo "🛠 Extracting IP of the running container"
+                    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt || true
+
+                    echo "📄 Contents of app_ip.txt:"
+                    cat app_ip.txt
+
+                    APP_IP=$(cat app_ip.txt | tr -d '[:space:]')
+                    echo "✅ APP_IP=${APP_IP}"
+
+                    if [ -z "$APP_IP" ]; then
+                        echo "❌ Failed to extract IP address"
+                        docker inspect digit-api-staging
+                        exit 1
+                    fi
+
+                    # ⏳ Wait for FastAPI to become healthy
+                    echo "⏳ Waiting for FastAPI app to respond at /health"
+                    for i in {1..10}; do
+                        if curl -s "http://${APP_IP}:8000/health" | grep -q "ok"; then
+                            echo "✅ FastAPI app is ready!"
+                            break
+                        fi
+                        echo "⏳ Still waiting..."
+                        sleep 2
+                    done
+
+                    echo "🌍 Running test with API_HOST=http://${APP_IP}:8000"
+                    API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py
                 '''
-                echo "🛠 Extracting IP of the running container"
-                docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt || true
-                echo "📄 Contents of app_ip.txt:"
-                cat app_ip.txt
-
-                APP_IP=$(cat app_ip.txt | tr -d '[:space:]')
-                echo "✅ APP_IP=${APP_IP}"
-
-                if [ -z "$APP_IP" ]; then
-                    echo "❌ Failed to extract IP address"
-                    docker inspect digit-api-staging
-                    exit 1
-                fi
-
-                echo "🌍 Running test with API_HOST=http://${APP_IP}:8000"
-                env API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py 
             }
         }
         stage('Deploy to Production'){
