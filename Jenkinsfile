@@ -101,7 +101,7 @@ pipeline {
                 pip install requests
 
                 echo "🛠 Extracting IP of the running container"
-                docker inspect digit-api-staging --format '{{range .NetworkSettings}}{{range .Networks}}{{.IPAddress}}{{end}}{{end}}' > app_ip.txt
+                docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt
                 echo "📄 Contents of app_ip.txt:"
                 cat app_ip.txt
 
