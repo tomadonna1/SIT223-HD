@@ -67,7 +67,7 @@ pipeline {
                 echo "Verifying container is attached to digit-net"
                 sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
 
-                echo "⏳ Waiting for FastAPI app to be ready (via /health)"
+                echo "Waiting for FastAPI app to be ready (via /health)"
                 sh '''
                     for i in {1..10}; do
                         if docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
@@ -89,7 +89,7 @@ pipeline {
                         -F "file=@/app/label_0.png")
 
                     if [ "$curl_response" -ne 200 ]; then
-                        echo "❌ /predict endpoint failed with status code $curl_response"
+                        echo "/predict endpoint failed with status code $curl_response"
                         docker logs digit-api-staging
                         exit 1
                     fi
@@ -127,14 +127,14 @@ pipeline {
                         digit-api:production
                 '''
 
-                echo "⏳ Verifying production app is running"
+                echo "Verifying production app is running"
                 sh '''
                     for i in {1..10}; do
                         if docker exec digit-api-production curl -s http://localhost:8000/health | grep -q "ok"; then
                             echo "Production app is ready!"
                             break
                         fi
-                        echo "⌛ Waiting for production app to start..."
+                        echo "Waiting for production app to start..."
                         sleep 2
                     done
                 '''
@@ -149,7 +149,7 @@ pipeline {
                     if (response != "200") {
                         echo "Production health check failed: HTTP $response"
                         mail to: 'tomdeptrai1@example.com',
-                            subject: '🚨 Production App Health Check Failed',
+                            subject: 'Production App Health Check Failed',
                             body: "The /health endpoint returned HTTP ${response}."
                         error("Production health check failed. Alert sent.")
                     } else {
