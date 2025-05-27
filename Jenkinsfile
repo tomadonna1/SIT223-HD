@@ -100,10 +100,22 @@ pipeline {
                 pip install --upgrade pip
                 pip install requests
 
-                APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging)
-                echo "Using APP_IP=$APP_IP"
+                echo "🛠 Extracting IP of the running container"
+                docker inspect digit-api-staging --format '{{range .NetworkSettings}}{{range .Networks}}{{.IPAddress}}{{end}}{{end}}' > app_ip.txt
+                echo "📄 Contents of app_ip.txt:"
+                cat app_ip.txt
 
-                export API_HOST="http://$APP_IP:8000"
+                APP_IP=$(cat app_ip.txt | tr -d '[:space:]')
+                echo "✅ APP_IP=${APP_IP}"
+
+                if [ -z "$APP_IP" ]; then
+                    echo "❌ Failed to extract IP address"
+                    exit 1
+                fi
+
+                export API_HOST="http://${APP_IP}:8000"
+                echo "🌍 API_HOST=${API_HOST}"
+
                 venv/bin/python test_api.py
                 '''
             }
