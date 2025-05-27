@@ -113,10 +113,8 @@ pipeline {
                     exit 1
                 fi
 
-                export API_HOST="http://${APP_IP}:8000"
-                echo "🌍 API_HOST=${API_HOST}"
-
-                venv/bin/python test_api.py
+                echo "🌍 Running test with API_HOST=http://${APP_IP}:8000"
+                env API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py    
                 '''
             }
         }
