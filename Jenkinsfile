@@ -142,12 +142,12 @@ pipeline {
 
         stage('Monitoring and Alerting'){
             steps {
-                echo "📡 Monitoring production /health endpoint"
+                echo "Monitoring production /health endpoint"
                 script {
                     def response = sh(script: "docker exec digit-api-production curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/health", returnStdout: true).trim()
                     if (response != "200") {
                         echo "Production health check failed: HTTP $response"
-                        mail to: 'tomdeptrai1@example.com',
+                        mail to: 'tomdeptrai1@gmail.com',
                             subject: 'Production App Health Check Failed',
                             body: "The /health endpoint returned HTTP ${response}."
                         error("Production health check failed. Alert sent.")
