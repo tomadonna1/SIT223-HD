@@ -105,9 +105,12 @@ pipeline {
                 . venv/bin/activate
                 pip install --upgrade pip
                 pip install requests
+
                 APP_IP=$(cat app_ip.txt)
                 echo "Using APP_IP=$APP_IP"
-                API_HOST="http://$APP_IP:8000" venv/bin/python test_api.py
+
+                export API_HOST="http://$APP_IP:8000"
+                venv/bin/python test_api.py
                 '''
             }
         }
