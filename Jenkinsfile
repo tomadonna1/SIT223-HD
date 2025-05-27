@@ -106,7 +106,7 @@ pipeline {
                 pip install --upgrade pip
                 pip install requests
                 APP_IP=$(cat app_ip.txt)
-                API_HOST="http://$APP_IP:8000" venv/bin/python test_api.pylint
+                API_HOST="http://$APP_IP:8000" venv/bin/python test_api.py
                 '''
             }
         }
