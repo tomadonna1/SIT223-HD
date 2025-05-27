@@ -45,5 +45,5 @@ def test_prediction(model, transform, image_path):
         output = model(input_tensor)
     predicted = torch.argmax(output, dim=1).item()
     
-    # Just check it's a valid class (0–9)
+    # Check it's a valid class (0–9)
     assert 0 <= predicted <= 9, f"Invalid prediction {predicted} for {image_path}"

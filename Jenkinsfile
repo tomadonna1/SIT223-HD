@@ -70,8 +70,8 @@ pipeline {
                         digit-api:staging
                 '''
 
-                echo "Verifying container is attached to digit-net"
-                sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
+                // echo "Verifying container is attached to digit-net"
+                // sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
 
                 echo "Waiting for FastAPI app to be ready (via /health)"
                 sh '''
