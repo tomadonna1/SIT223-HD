@@ -81,7 +81,7 @@ pipeline {
                             break
                         fi
                         echo "Waiting for FastAPI app to start"
-                        sleep 2
+                        sleep 10
                     done
                 '''
 
@@ -105,7 +105,7 @@ pipeline {
 
                 echo "Checking container logs in case of startup failure"
                 sh '''
-                    sleep 3
+                    sleep 10
                     if ! docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
                         echo "FastAPI app did not start properly. Dumping logs:"
                         docker logs digit-api-staging
@@ -140,8 +140,8 @@ pipeline {
                             echo "Production app is ready!"
                             break
                         fi
-                        echo "Waiting for production app to start..."
-                        sleep 2
+                        echo "Waiting for production app to start"
+                        sleep 10
                     done
                 '''
             }
