@@ -12,19 +12,8 @@ pipeline {
         DIRECTORY_PATH = 'https://github.com/tomadonna1/SIT223-HD.git'
         TESTING_ENVIRONMENT = 'testing environment'
         PRODUCTION_ENVIRONMENT = 'production environment'
-    }
-    options {
-        skipStagesAfterUnstable()
-    }  
+    } 
     stages {
-        stage('Docker Cleanup') {
-            steps {
-                echo "Cleaning Docker build cache to prevent snapshot errors"
-                sh '''
-                    docker builder prune -f
-                '''
-            }
-        }
         stage('Build') {
             steps {
                 echo "Fetch the source code from the directory path specified by the environment variable"
@@ -57,16 +46,16 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                echo "🌐 Creating Docker network for staging environment"
+                echo "Creating Docker network for staging environment"
                 sh 'docker network create digit-net || true'
 
-                echo "🧹 Cleaning up old staging container (if any)"
+                echo "Cleaning up old staging container (if any)"
                 sh 'docker rm -f digit-api-staging || true'
 
-                echo "🐳 Building the FastAPI Docker image"
+                echo "Building the FastAPI Docker image"
                 sh 'docker build -t digit-api:staging -f Dockerfile.app .'
 
-                echo "🚀 Running the app container on digit-net with alias"
+                echo "Running the app container on digit-net with alias"
                 sh '''
                     docker run -d \
                         --name digit-api-staging \
@@ -75,7 +64,7 @@ pipeline {
                         digit-api:staging
                 '''
 
-                echo "🔍 Verifying container is attached to digit-net"
+                echo "Verifying container is attached to digit-net"
                 sh 'docker inspect digit-api-staging --format "{{json .NetworkSettings.Networks}}"'
 
                 echo "⏳ Waiting for FastAPI app to be ready (via /health)"
@@ -90,7 +79,7 @@ pipeline {
                     done
                 '''
 
-                echo "🧪 Verifying /predict endpoint is functional"
+                echo "Verifying /predict endpoint is functional"
                 sh '''
                     # You must have a sample image available inside the container
                     docker cp test_images/label_0.png digit-api-staging:/app/label_0.png
@@ -105,14 +94,14 @@ pipeline {
                         exit 1
                     fi
 
-                    echo "✅ /predict endpoint is working"
+                    echo "/predict endpoint is working"
                 '''
 
-                echo "🔍 Checking container logs in case of startup failure"
+                echo "Checking container logs in case of startup failure"
                 sh '''
                     sleep 3
                     if ! docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
-                        echo "❌ FastAPI app did not start properly. Dumping logs:"
+                        echo "FastAPI app did not start properly. Dumping logs:"
                         docker logs digit-api-staging
                         exit 1
                     fi
@@ -121,15 +110,15 @@ pipeline {
         }
         stage('Release to Production') {
             steps {
-                echo "🚀 Promoting app to production environment"
+                echo "Promoting app to production environment"
 
-                echo "🧹 Cleaning up old production container (if any)"
+                echo "Cleaning up old production container (if any)"
                 sh 'docker rm -f digit-api-production || true'
 
-                echo "📦 Tagging staging image as production"
+                echo "Tagging staging image as production"
                 sh 'docker tag digit-api:staging digit-api:production'
 
-                echo "🌐 Running production container on digit-net"
+                echo "Running production container on digit-net"
                 sh '''
                     docker run -d \
                         --name digit-api-production \
@@ -142,7 +131,7 @@ pipeline {
                 sh '''
                     for i in {1..10}; do
                         if docker exec digit-api-production curl -s http://localhost:8000/health | grep -q "ok"; then
-                            echo "✅ Production app is ready!"
+                            echo "Production app is ready!"
                             break
                         fi
                         echo "⌛ Waiting for production app to start..."
@@ -158,13 +147,13 @@ pipeline {
                 script {
                     def response = sh(script: "docker exec digit-api-production curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/health", returnStdout: true).trim()
                     if (response != "200") {
-                        echo "❌ Production health check failed: HTTP $response"
+                        echo "Production health check failed: HTTP $response"
                         mail to: 'tomdeptrai1@example.com',
                             subject: '🚨 Production App Health Check Failed',
                             body: "The /health endpoint returned HTTP ${response}."
                         error("Production health check failed. Alert sent.")
                     } else {
-                        echo "✅ Production health check OK"
+                        echo "Production health check OK"
                     }
                 }
             }
