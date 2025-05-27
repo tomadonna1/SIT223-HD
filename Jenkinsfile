@@ -101,50 +101,39 @@ pipeline {
                 '''
             }
         }
-        stage('Integration Tests on Staging'){
+        stage('Release to Production') {
             steps {
-                echo "Running integration tests _inside_ app container"
+                echo "🚀 Promoting app to production environment"
+
+                echo "🧹 Cleaning up old production container (if any)"
+                sh 'docker rm -f digit-api-production || true'
+
+                echo "📦 Tagging staging image as production"
+                sh 'docker tag digit-api:staging digit-api:production'
+
+                echo "🌐 Running production container on digit-net"
                 sh '''
-                    set -e
+                    docker run -d \
+                        --name digit-api-production \
+                        --network digit-net \
+                        --network-alias digit-api-production \
+                        digit-api:production
+                '''
 
-                    # 🐍 Setup virtual environment
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install requests
-
-                    # 🛠 Extract container IP
-                    echo "🛠 Extracting IP of the running container"
-                    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt || true
-
-                    echo "📄 Contents of app_ip.txt:"
-                    cat app_ip.txt
-
-                    APP_IP=$(cat app_ip.txt | tr -d '[:space:]')
-                    echo "✅ APP_IP=${APP_IP}"
-
-                    if [ -z "$APP_IP" ]; then
-                        echo "❌ Failed to extract IP address"
-                        docker inspect digit-api-staging
-                        exit 1
-                    fi
-
-                    # ⏳ Wait for FastAPI to become healthy
-                    echo "⏳ Waiting for FastAPI app to respond at /health"
+                echo "⏳ Verifying production app is running"
+                sh '''
                     for i in {1..10}; do
-                        if curl -s "http://${APP_IP}:8000/health" | grep -q "ok"; then
-                            echo "✅ FastAPI app is ready!"
+                        if docker exec digit-api-production curl -s http://localhost:8000/health | grep -q "ok"; then
+                            echo "✅ Production app is ready!"
                             break
                         fi
-                        echo "⏳ Still waiting..."
+                        echo "⌛ Waiting for production app to start..."
                         sleep 2
                     done
-
-                    echo "🌍 Running test with API_HOST=http://${APP_IP}:8000"
-                    API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py
                 '''
             }
         }
+
         stage('Deploy to Production'){
             steps {
                 echo "Move working version from staging to production"
