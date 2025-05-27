@@ -10,3 +10,4 @@ pylint
 black
 bandit
 pip-audit
+python-multipart
