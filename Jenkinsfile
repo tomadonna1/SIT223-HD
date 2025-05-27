@@ -32,12 +32,19 @@ pipeline {
                 echo "Running code quality checks on lenet.py"
                 sh '/opt/venv/bin/flake8 lenet.py --count --select=E9,F63,F7,F82 --show-source --statistics || true'
                 sh '/opt/venv/bin/pylint lenet.py || true'
+
+                echo "Running code quality checks on app.py"
+                sh '/opt/venv/bin/flake8 app.py --count --select=E9,F63,F7,F82 --show-source --statistics || true'
+                sh '/opt/venv/bin/pylint app.py || true'
             }
         }
         stage('Security Scan') {
             steps {
                 echo "Running Bandit scan on lenet.py"
                 sh '/opt/venv/bin/bandit -r lenet.py || true'
+
+                echo "Running Bandit scan on app.py"
+                sh '/opt/venv/bin/bandit -r app.py || true'
 
                 echo "Running pip-audit for dependency vulnerabilities"
                 sh '/opt/venv/bin/pip-audit || true'
