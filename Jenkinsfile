@@ -89,12 +89,6 @@ pipeline {
                         sleep 2
                     done
                 '''
-
-                echo "📦 Extracting container IP and saving to app_ip.txt"
-                sh '''
-                    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt
-                    cat app_ip.txt
-                '''
             }
         }
         stage('Integration Tests on Staging'){
@@ -106,7 +100,7 @@ pipeline {
                 pip install --upgrade pip
                 pip install requests
 
-                APP_IP=$(cat app_ip.txt)
+                APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging)
                 echo "Using APP_IP=$APP_IP"
 
                 export API_HOST="http://$APP_IP:8000"
