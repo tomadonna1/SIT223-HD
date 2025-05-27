@@ -152,19 +152,21 @@ pipeline {
             }
         }
 
-        stage('Deploy to Production'){
+        stage('Monitoring and Alerting'){
             steps {
-                echo "Move working version from staging to production"
-                echo "Tool: Docker, AWS CLI, FastAPI"
-            }
-            // post {
-            //     success{ echo "Post success "
-            //             mail to: "tomdeptrai1@gmail.com",
-            //                 subject: "Build Status Email",
-            //                 body: "Build was successful!"
-            //             }
-            //     failure { echo "Post failed" } 
-            // }
+                echo "📡 Monitoring production /health endpoint"
+                script {
+                    def response = sh(script: "docker exec digit-api-production curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/health", returnStdout: true).trim()
+                    if (response != "200") {
+                        echo "❌ Production health check failed: HTTP $response"
+                        mail to: 'tomdeptrai1@example.com',
+                            subject: '🚨 Production App Health Check Failed',
+                            body: "The /health endpoint returned HTTP ${response}."
+                        error("Production health check failed. Alert sent.")
+                    } else {
+                        echo "✅ Production health check OK"
+                    }
+                }
         }
     }
 }
