@@ -24,7 +24,6 @@ pipeline {
         stage('Unit and Integration Tests') {
             steps {
                 echo "Running unit and integration tests with pytest"
-                // sh '/opt/venv/bin/python unit_integration_tests/test_model.py'
                 sh '/opt/venv/bin/pytest'
             }
         }
@@ -49,7 +48,7 @@ pipeline {
                 echo "Creating Docker network for staging environment"
                 sh 'docker network create digit-net || true'
 
-                echo "Cleaning up old staging container (if any)"
+                echo "Cleaning up old staging container"
                 sh 'docker rm -f digit-api-staging || true'
 
                 echo "Building the FastAPI Docker image"
