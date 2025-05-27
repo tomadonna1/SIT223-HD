@@ -95,13 +95,14 @@ pipeline {
             steps {
                 echo "Running integration tests _inside_ app container"
                 sh '''
+                set -e
                 python3 -m venv venv
                 . venv/bin/activate
                 pip install --upgrade pip
                 pip install requests
 
                 echo "🛠 Extracting IP of the running container"
-                docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt
+                docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' digit-api-staging > app_ip.txt || true
                 echo "📄 Contents of app_ip.txt:"
                 cat app_ip.txt
 
@@ -110,11 +111,12 @@ pipeline {
 
                 if [ -z "$APP_IP" ]; then
                     echo "❌ Failed to extract IP address"
+                    docker inspect digit-api-staging
                     exit 1
                 fi
 
                 echo "🌍 Running test with API_HOST=http://${APP_IP}:8000"
-                env API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py    
+                env API_HOST="http://${APP_IP}:8000" venv/bin/python test_api.py 
                 '''
             }
         }
