@@ -89,6 +89,16 @@ pipeline {
                         sleep 2
                     done
                 '''
+
+                echo "🔍 Checking container logs in case of startup failure"
+                sh '''
+                    sleep 3
+                    if ! docker exec digit-api-staging curl -s http://localhost:8000/health | grep -q "ok"; then
+                        echo "❌ FastAPI app did not start properly. Dumping logs:"
+                        docker logs digit-api-staging
+                        exit 1
+                    fi
+                '''
             }
         }
         stage('Integration Tests on Staging'){
